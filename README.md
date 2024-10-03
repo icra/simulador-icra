@@ -10,3 +10,5 @@ poder calcular indicadors (econòmics, científics i impacte)
   "posa-li una previsió de generació científica (papers, productes)"
   "calcula estrés (% de la despesa total)"
   "fes el mateix per 20 projectes i calcula el pressupost total del centre"
+
+- una vegada funcioni, poder carregar dades via excel
