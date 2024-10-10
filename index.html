@@ -1,0 +1,419 @@
+<!doctype html><html><head>
+  <meta charset=utf8>
+  <title>ICRA</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <style>
+    /**/
+    body{
+      overflow-y:scroll;
+    }
+    input[type=text],textarea{
+      field-sizing:content;
+    }
+    input[type=number]{
+      text-align:right;
+    }
+    td{
+      vertical-align:top;
+    }
+    summary:hover{
+      background:lightblue;
+    }
+    label:hover{
+      background:gold;
+      border-radius:5px;
+    }
+    hr{
+      border:none;
+    }
+  </style>
+</head><body>
+<h1>simulador icra (en desenvolupament)</h1>
+
+<div id=app>
+  <div v-if="escenari">
+    <div>
+      <b style="font-size:x-large">Escenari </b>
+      <input type=text v-model="escenari.nom"
+        style="font-size:x-large"
+      >
+    </div><hr>
+
+    <div
+      style="
+        display:grid;
+        grid-template-columns:50% 50%;
+        grid-gap:5px;
+      "
+    >
+      <!--projectes-->
+      <div>
+        <table border=1 id=projectes>
+          <thead>
+            <tr>
+              <td colspan=2>
+                <b>Projectes ({{escenari.projectes.length}})&nbsp;</b>
+                <button @click="afegir_projecte()"
+                  style="
+                    padding:0.618em 1.618em;
+                  "
+                >afegir projecte
+                </button>
+
+                <span>
+                  vista
+                  <button onclick="document.querySelectorAll('#projectes details').forEach(d=>d.removeAttribute('open'))">
+                    -
+                  </button>
+                  <button onclick="document.querySelectorAll('#projectes details').forEach(d=>d.setAttribute('open',1))">
+                    +
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </thead>
+          <tr v-if="escenari.projectes.length==0">
+            <td>~no hi ha projectes</td>
+          </tr>
+          <tr v-for="p,i in escenari.projectes">
+            <td>
+              <!--projecte-->
+              <details open>
+                <summary>
+                  <input v-model="p.nom">
+                </summary>
+                <div>
+                  <table border=1>
+                    <tr>
+                      <td>
+                        <label>Inici <input type=date v-model="p.durada.inici"></label><!--
+                        --> <label>Final <input type=date v-model="p.durada.final"></label>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Tipus projecte<hr>
+                        <div
+                          style="
+                            display:grid;
+                            grid-template-columns:repeat(4,1fr);
+                          "
+                        >
+                          <div v-for="t in p.tipus">
+                            <label>
+                              <input type=radio v-model="p.tipus_triat" :value="t"> {{t}}
+                            </label>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Despeses
+                        <button @click="afegir_despesa(p)"
+                          style="
+                            padding:0.618em 1em;
+                          "
+                        >
+                          afegir despesa
+                        </button>
+                        <table border=1 style="border-collapse:collapse">
+                          <tr v-if="p.despeses.length==0">
+                            <td>~no hi ha despeses</td>
+                          </tr>
+                          <tbody v-for="d,j in p.despeses">
+                            <tr>
+                              <td>
+                                <details>
+                                  <summary>
+                                    <input type=text v-model="d.nom">
+                                    <input type=number v-model="d.euros"> €
+                                  </summary>
+                                  <table>
+                                    <tr>
+                                      <td>
+                                        <label><input type=radio v-model="d.rrhh" :value="false" @click="d.persona=null"> No-RRHH</label>
+                                        <label><input type=radio v-model="d.rrhh" :value="true"> RRHH </label>
+                                        <select v-model="d.persona" :disabled="!d.rrhh">
+                                          <option :value="null">--selecciona persona--</option>
+                                          <option v-for="per in escenari.persones" :value="per">{{per.nom}}</option>
+                                        </select>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </details>
+                              </td>
+                              <td>
+                                <button @click="p.despeses.splice(j,1)">
+                                  eliminar despesa
+                                </button>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        "Producció" TBD
+                        <button>
+                          afegir producte TBD
+                        </button>
+                        <table border=1>
+                          <tr>
+                            <td>
+                              llistat de:
+                              articles científics, productes, serveis, impacte...
+                              TBD
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </details>
+            </td>
+            <td>
+              <button @click="escenari.projectes.splice(i,1)">eliminar projecte</button>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!--personal-->
+      <div>
+        <table border=1 id=persones>
+          <thead>
+            <tr>
+              <td colspan=2>
+                <b>Persones ({{escenari.persones.length}})&nbsp;</b>
+                <button @click="afegir_persona()"
+                  style="
+                    padding:0.618em 1.618em;
+                  "
+                >afegir persona</button>
+
+                <span>
+                  vista
+                  <button onclick="document.querySelectorAll('#persones details').forEach(d=>d.removeAttribute('open'))">
+                    -
+                  </button>
+                  <button onclick="document.querySelectorAll('#persones details').forEach(d=>d.setAttribute('open',1))">
+                    +
+                  </button>
+                </span>
+              </td>
+            </tr>
+          </thead>
+          <tr v-if="escenari.persones.length==0">
+            <td>
+              ~no hi ha persones
+            </td>
+          </tr>
+          <tbody v-for="p in escenari.persones">
+            <tr>
+              <td>
+                <details open>
+                  <summary>
+                    <input type=text v-model="p.nom">
+                  </summary>
+                  <table border=1>
+                    <tr>
+                      <td>Tipus</td>
+                      <td>
+                        <label><input type=radio v-model="p.tipus" value="admin"> admin</label>
+                        <label><input type=radio v-model="p.tipus" value="recerca"> recerca</label>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Permanent</td>
+                      <td>
+                        <label><input type=radio v-model="p.permanent" :value="true"> sí</label>
+                        <label><input type=radio v-model="p.permanent" :value="false"> no</label>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Categoria</td>
+                      <td>
+                        <label><input type=radio v-model="p.categoria" value="admin"> admin</label>
+                        <label><input type=radio v-model="p.categoria" value="tècnic"> tècnic</label>
+                        <label><input type=radio v-model="p.categoria" value="ip"      :disabled="p.tipus!='recerca'"> ip</label>
+                        <label><input type=radio v-model="p.categoria" value="predoc"  :disabled="p.tipus!='recerca'"> predoc</label>
+                        <label><input type=radio v-model="p.categoria" value="postdoc" :disabled="p.tipus!='recerca'"> postdoc</label>
+                      </td>
+                    </tr>
+                  </table>
+                </details>
+              </td>
+              <td>
+                <button @click="eliminar_persona(p)">
+                  eliminar persona
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr>
+
+    <div>
+      <table border=1>
+        <tr>
+          <th colspan=2>
+            TAULA INDICADORS
+          </th>
+        <tr>
+          <td>Total despeses</td>
+          <td>
+            {{format(total_despeses)}} €
+          </td>
+        </tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>//Estructura
+  class Escenari{
+    constructor(){
+      this.nom="escenari exemple icra 2030";
+
+      //taula de variables globals
+      this.constants={
+        "Pujada salarial anual":0.01, //1%
+      };
+
+      this.projectes=[]; //array objectes Projecte
+      this.persones=[];
+    }
+  }
+
+  //projecte dins d'un Escenari
+  class Projecte{
+    constructor(){
+      this.nom = "nom del projecte"; //exemple: "projecte europeu que comença el 2027"
+
+      this.durada={
+        inici: "2027-01-01",
+        final: "2030-01-01",
+      };
+
+      this.tipus=[
+        "estructural",                    //del mateix centre, a.k.a. "patrons"
+        "competitiu - europeu - gran",    //recerca
+        "competitiu - europeu - petit",   //recerca
+        "competitiu - espanyol",          //recerca
+        "competitiu - espanyol - català", //recerca
+        "transferència",                  //SCT, consultoria, ...
+        "mecenatge",                      //donacions
+        "SCTs",
+        "CAPEX",
+        "altres",                         //poder inventar-se altres tipus?
+      ];
+      this.tipus_triat=null;
+
+      this.despeses=[
+        //objectes Despesa
+      ];
+
+      this.produccio=[
+        //produccio científica/impacte/serveis, TBD
+      ];
+    }
+
+    //TODO
+    calcula_pressupost(){
+      //diners a demanar = despeses - ingressos
+      return 0;
+    }
+  }
+
+  //despesa o ingrés dins d'un Projecte
+  class Despesa{
+    constructor(){
+      this.nom     = "descripció despesa";
+      this.euros   = 0;     //euros
+      this.rrhh    = false; //personal (salari) ò compra d'un equip ò manteniment d'un aparell ò compra fungibles
+      this.persona = null; //objecte persona en cas que sigui despesa tipus rrhh
+    }
+  }
+
+  //persona dins d'un escenari per assignar a les despeses de tipus RRHH
+  class Persona{
+    constructor(){
+      this.nom="nom o descripció persona";
+      this.tipus="admin"; //["admin","recerca"]
+      this.categoria="admin"; //["ip","predoc","postdoc","tècnic"]
+      this.permanent=true; //bool: temporal (=0) | permanent (=1)
+    }
+  }
+</script>
+
+<script>//Vue
+  let app=Vue.createApp({
+    data(){return{
+      escenari:null,
+    }},
+
+    methods:{
+      format(numero){
+        return Intl.NumberFormat().format(numero);
+      },
+      afegir_projecte(){
+        let p = new Projecte();
+        this.escenari.projectes.push(p);
+      },
+      afegir_persona(){
+        let p = new Persona();
+        this.escenari.persones.push(p);
+      },
+      eliminar_persona(p){
+        this.escenari.projectes.forEach(pro=>{
+          pro.despeses.forEach(des=>{
+            if(des.persona==p){
+              console.log(des);
+              des.persona=null;
+              console.log(des);
+            }
+          });
+        });
+        let index = this.escenari.persones.indexOf(p);
+        this.escenari.persones.splice(index,1);
+      },
+      afegir_despesa(projecte){
+        let d = new Despesa();
+        projecte.despeses.push(d);
+      },
+    },
+
+    computed:{
+      total_despeses(){
+        let total = 0;
+        this.escenari.projectes.forEach(pro=>{
+          pro.despeses.forEach(des=>{
+            total += des.euros;
+          });
+        });
+        return total;
+      },
+    },
+
+    mounted(){
+      let esc = new Escenari();
+      let pro = new Projecte();
+      let per = new Persona();
+      let des = new Despesa();
+
+      esc.projectes.push(pro);
+      esc.persones .push(per);
+      pro.despeses.push(des);
+
+      this.escenari = esc;
+    },
+  }).mount("#app");
+
+</script>

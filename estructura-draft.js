@@ -14,20 +14,20 @@
     "crea 20 projectes i calcula el pressupost total"
 */
 
-//taula de variables globals
-const Constants={
-  "Pujada salarial anual": 0.1, //10%
-};
-
-//personal del centre disponible "teòric" per assignar als projectes
-class Persona{
+class Escenari{
   constructor(){
-    this.tipus     = ""; //recerca|admin;
-    this.categoria = ""; //ip|predoc|postdoc|...?????
-    this.permanent = 1;  //bool: eventual o permanent
+    this.nom="icra durant el 2030";
+
+    this.projectes=[]; //array objectes Projecte
+
+    //taula de variables globals
+    this.constants={
+      "Pujada salarial anual":0.01, //1%
+    };
   }
 }
 
+//projecte dins d'un Escenari
 class Projecte{
   constructor(){
     this.nom = "descripció projecte"; //exemple: "projecte europeu que comença el 2027"
@@ -68,12 +68,23 @@ class Projecte{
   }
 }
 
-//els projectes generen despeses
+//despesa o ingrés dins d'un Projecte
 class Despesa{
   constructor(){
     this.nom   = "descripció despesa";
     this.any   = 2024;
-    this.rrhh  = false; //personal (salari) ò compra d'un equip ò manteniment d'un aparell ò compra fungibles
     this.euros = 0;     //euros
+
+    this.rrhh  = false; //personal (salari) ò compra d'un equip ò manteniment d'un aparell ò compra fungibles
   }
 }
+
+//Persona dins d'una Despesa
+class Persona{
+  constructor(){
+    this.tipus     = ""; //recerca|admin;
+    this.categoria = ""; //ip|predoc|postdoc|...?????
+    this.permanent = 1;  //bool: eventual o permanent
+  }
+}
+
