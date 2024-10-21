@@ -3,7 +3,6 @@
   <title>ICRA</title>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <style>
-    /**/
     body{
       overflow-y:scroll;
     }
@@ -18,23 +17,26 @@
     }
     summary:hover{
       background:lightblue;
+      transition:all 0.1s;
     }
     label:hover{
       background:gold;
       border-radius:5px;
+      transition:all 0.1s;
     }
     hr{
       border:none;
     }
   </style>
 </head><body>
-<h1>simulador icra (en desenvolupament)</h1>
+<h1>Simulador ICRA (en desenvolupament)</h1>
 
 <div id=app>
   <div v-if="escenari">
     <div>
       <b style="font-size:x-large">Escenari </b>
-      <input type=text v-model="escenari.nom"
+      <input type=text
+        v-model="escenari.nom"
         style="font-size:x-large"
       >
     </div><hr>
@@ -48,27 +50,31 @@
     >
       <!--projectes-->
       <div>
-        <table border=1 id=projectes>
+        <table border=1 id=projectes style="width:100%">
           <thead>
             <tr>
               <td colspan=2>
-                <b>Projectes ({{escenari.projectes.length}})&nbsp;</b>
-                <button @click="afegir_projecte()"
+                <div
                   style="
-                    padding:0.618em 1.618em;
+                    display:flex;
+                    align-items:center;
                   "
-                >afegir projecte
-                </button>
+                >
+                  <div>
+                    <b>Projectes ({{escenari.projectes.length}})&nbsp;</b>
+                  </div>
 
-                <span>
-                  vista
-                  <button onclick="document.querySelectorAll('#projectes details').forEach(d=>d.removeAttribute('open'))">
-                    -
+                  <button
+                    @click="afegir_projecte()"
+                    style="padding:0.618em 1.618em;"
+                  >afegir projecte
                   </button>
-                  <button onclick="document.querySelectorAll('#projectes details').forEach(d=>d.setAttribute('open',1))">
-                    +
-                  </button>
-                </span>
+
+                  <div>&nbsp;vista
+                    <button onclick="document.querySelectorAll('#projectes details').forEach(d=>d.removeAttribute('open'))">-</button>
+                    <button onclick="document.querySelectorAll('#projectes details').forEach(d=>d.setAttribute('open',1 ))">+</button>
+                  </div>
+                </div>
               </td>
             </tr>
           </thead>
@@ -80,7 +86,7 @@
               <!--projecte-->
               <details open>
                 <summary>
-                  <input v-model="p.nom">
+                  <input v-model="p.nom" placeholder="nom del projecte">
                 </summary>
                 <div>
                   <table border=1>
@@ -108,7 +114,7 @@
                       </td>
                     </tr>
                     <tr>
-                      <td>
+                      <td style="padding-left:20px">
                         Despeses
                         <button @click="afegir_despesa(p)"
                           style="
@@ -192,24 +198,18 @@
                   style="
                     padding:0.618em 1.618em;
                   "
-                >afegir persona</button>
+                >afegir persona
+                </button>
 
-                <span>
-                  vista
-                  <button onclick="document.querySelectorAll('#persones details').forEach(d=>d.removeAttribute('open'))">
-                    -
-                  </button>
-                  <button onclick="document.querySelectorAll('#persones details').forEach(d=>d.setAttribute('open',1))">
-                    +
-                  </button>
+                <span>&nbsp;vista
+                  <button onclick="document.querySelectorAll('#persones details').forEach(d=>d.removeAttribute('open'))">-</button>
+                  <button onclick="document.querySelectorAll('#persones details').forEach(d=>d.setAttribute('open',1 ))">+</button>
                 </span>
               </td>
             </tr>
           </thead>
           <tr v-if="escenari.persones.length==0">
-            <td>
-              ~no hi ha persones
-            </td>
+            <td>~no hi ha persones</td>
           </tr>
           <tbody v-for="p in escenari.persones">
             <tr>
@@ -303,16 +303,14 @@
       };
 
       this.tipus=[
-        "estructural",                    //del mateix centre, a.k.a. "patrons"
-        "competitiu - europeu - gran",    //recerca
-        "competitiu - europeu - petit",   //recerca
-        "competitiu - espanyol",          //recerca
-        "competitiu - espanyol - català", //recerca
-        "transferència",                  //SCT, consultoria, ...
-        "mecenatge",                      //donacions
+        "estructural",         //del mateix centre, a.k.a. "patrons"
+        "competitiu-europeu",  //recerca
+        "competitiu-nacional", //recerca
+        "transferència",       //SCT, consultoria, ...
+        "mecenatge",           //donacions
         "SCTs",
         "CAPEX",
-        "altres",                         //poder inventar-se altres tipus?
+        "altres",              //poder inventar-se altres tipus?
       ];
       this.tipus_triat=null;
 
@@ -415,5 +413,4 @@
       this.escenari = esc;
     },
   }).mount("#app");
-
 </script>
