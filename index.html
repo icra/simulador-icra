@@ -1,7 +1,7 @@
 <!doctype html><html><head>
   <meta charset=utf8>
   <title>ICRA</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
     body{
       overflow-y:scroll;
@@ -16,7 +16,8 @@
       background:yellow;
     }
 
-    input[type=number]{
+    input[type=number],
+    [number]{
       text-align:right;
     }
     td{
@@ -78,13 +79,17 @@
 
                   <button
                     @click="afegir_projecte()"
-                    style="padding:0.618em 1.618em;"
+                    style="
+                      padding:0.618em 1.618em;
+                      background:royalblue;
+                      color:white;
+                    "
                   >afegir projecte
                   </button>
 
-                  <div>&nbsp;vista
-                    <button @click="escenari.projectes.forEach(p=>p.visible=0)">-</button>
-                    <button @click="escenari.projectes.forEach(p=>p.visible=1)">+</button>
+                  <div>&nbsp;vista projectes
+                    <button @click="escenari.projectes.forEach(p=>p.visible=0)" :disabled="escenari.projectes.every(p=>!p.visible)">-</button>
+                    <button @click="escenari.projectes.forEach(p=>p.visible=1)" :disabled="escenari.projectes.every(p=>p.visible)">+</button>
                   </div>
                 </div>
               </td>
@@ -97,8 +102,10 @@
             <td>
               <!--projecte-->
 
-              <input type=text v-model="p.nom" placeholder="nom/descripció" :id="`nom-projecte-${i}`">
+              <input type=text v-model="p.nom" placeholder="nom/descripció projecte" :id="`nom-projecte-${i}`">
               <button @click="p.visible^=1" :visible="p.visible">detalls</button>
+
+              <span v-if="!p.visible">&nbsp;{{format(p.total_despeses)}} €</span>
 
               <div v-if="p.visible">
                 <table border=1>
@@ -128,6 +135,22 @@
                       </div>
                     </td>
                   </tr>
+                  <tr>
+                    <td>
+                      <label>
+                        <input type=checkbox v-model="p.competitiu">
+                        Projecte competitiu
+                      </label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>
+                        <input type=checkbox v-model="p.europeu">
+                        Projecte europeu
+                      </label>
+                    </td>
+                  </tr>
 
                   <tr>
                     <td>
@@ -136,21 +159,27 @@
                         <option :value="null">--selecciona persona--</option>
                         <option v-for="per in escenari.persones" :value="per">{{per.nom}}</option>
                       </select>
+                      <span v-if="p.IP">
+                        <button @click="veure_persona(p.IP)">veure</button>
+                      </span>
                     </td>
                   </tr>
 
                   <tr>
                     <td style="padding-left:10px">
-                      <b>Taula Despeses ({{p.despeses.length}})</b>&emsp;
+                      <b>Taula Despeses ({{p.despeses.length}})</b>&nbsp;
                       <button @click="afegir_despesa(p)" style="padding:0.618em 1em;">
                         afegir despesa
                       </button>
-                      <span>&nbsp;vista
-                        <button @click="p.despeses.forEach(d=>d.visible=0)">-</button>
-                        <button @click="p.despeses.forEach(d=>d.visible=1)">+</button>
+                      <span>&nbsp;vista despeses
+                        <button @click="p.despeses.forEach(d=>d.visible=0)" :disabled="p.despeses.every(d=>!d.visible)">-</button>
+                        <button @click="p.despeses.forEach(d=>d.visible=1)" :disabled="p.despeses.every(d=>d.visible)">+</button>
                       </span>
 
-                      <code v-if="p.despeses.length==0">&nbsp;~no hi ha despeses</code>
+                      <div v-if="p.despeses.length==0">
+                        <code>&nbsp;~no hi ha despeses</code>
+                      </div>
+
                       <table v-if="p.despeses.length" border=1 style="border-collapse:collapse"
                         :despeses_projecte="i"
                         class=despeses
@@ -159,7 +188,7 @@
                           <tr>
                             <td>
                               <div style="white-space:nowrap">
-                                <input type=text v-model="d.nom">
+                                <input type=text v-model="d.nom" placeholder="nom/descripció despesa">
                                 <button @click="d.visible^=1" :visible="d.visible">detalls</button>
                               </div>
 
@@ -181,6 +210,9 @@
                                         <option :value="null">--selecciona persona--</option>
                                         <option v-for="per in escenari.persones" :value="per">{{per.nom}}</option>
                                       </select>
+                                      <span v-if="d.persona">
+                                        <button @click="veure_persona(d.persona)">veure</button>
+                                      </span>
                                     </div>
                                   </td>
                                 </tr>
@@ -191,7 +223,7 @@
                                 <input type=number v-model="d.euros"> €
                               </div>
                               <div v-if="d.rrhh && d.persona">
-                                <button @click="d.euros = d.persona.cost_empresa_eur">
+                                <button v-if="d.visible" @click="d.euros = d.persona.cost_empresa_eur">
                                   set despesa = CA
                                   ({{d.persona.cost_empresa_eur}} €)
                                 </button>
@@ -203,11 +235,22 @@
                           </tr>
                         </tbody>
                         <tr>
-                          <td>Overheads calculats</td>
+                          <td>
+                            <div>
+                            </div>
+                            Overheads calculats
+                            <input type=number v-model.number="p.percentatge_overheads" style="width:3em" max=100 min=0> %
+                          </td>
                           <td style="text-align:right">
-                            {{p.overheads}} €
+                            {{format(p.overheads)}} €
                           </td>
                         </tr>
+                        <tfoot>
+                          <tr>
+                            <td>Total despeses projecte</td>
+                            <td number>{{format(p.total_despeses)}} €</td>
+                          </tr>
+                        </tfoot>
                       </table>
                     </td>
                   </tr>
@@ -235,9 +278,9 @@
                 >afegir persona
                 </button>
 
-                <span>&nbsp;vista
-                  <button @click="escenari.persones.forEach(p=>p.visible=0)">-</button>
-                  <button @click="escenari.persones.forEach(p=>p.visible=1)">+</button>
+                <span>&nbsp;vista persones
+                  <button @click="escenari.persones.forEach(p=>p.visible=0)" :disabled="escenari.persones.every(p=>!p.visible)">-</button>
+                  <button @click="escenari.persones.forEach(p=>p.visible=1)" :disabled="escenari.persones.every(p=>p.visible)">+</button>
                 </span>
               </td>
             </tr>
@@ -282,6 +325,25 @@
                     <td>Cost Empresa Anual ("CA")</td>
                     <td>
                       <input type=number v-model="p.cost_empresa_eur"> €
+
+                      <div v-for="llista_projectes in [get_projectes_on_la_persona_esta_involucrada(p)]">
+                        <table border=1 v-if="llista_projectes.length" style="font-size:smaller;border-collapse:collapse">
+                          <tr v-for="pro in llista_projectes">
+                            <td>
+                              <a href="#" @click="veure_projecte(pro);return false">{{pro.nom}}</a>
+                            </td>
+                            <td>
+                              <table style="font-size:smaller">
+                                <tr v-for="d in pro.despeses.filter(d=>d.persona==p)">
+                                  <td>{{d.nom}}:</td>
+                                  <td>{{format(d.euros)}} €</td>
+                                  <td>({{format(d.euros/p.cost_empresa_eur*100)}}%)</td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
                     </td>
                   </tr>
                 </table>
@@ -305,18 +367,15 @@
           <th colspan=2>
             TAULA INDICADORS
           </th>
-        <tr>
-          <td>Total despeses</td>
-          <td>
-            {{format(total_despeses)}} €
-          </td>
-        </tr>
-        <tr>
-          <td>Total despeses RRHH</td>
-          <td>
-            {{format(total_despeses_RRHH)}} €
-          </td>
-        </tr>
+        <tr><td>Total despeses       <td number>{{format(total_despeses)}} €</td></tr>
+        <tr><td>Total despeses RRHH  <td number>{{format(total_despeses_RRHH)}} €</td></tr>
+        <tr><td>Total despeses CAPEX <td number>{{format(total_despeses_CAPEX)}} €</td></tr>
+        <tr><td>Total overheads      <td number>{{format(escenari.projectes.map(p=>p.overheads).reduce((p,c)=>p+c,0))}} €</td></tr>
+        <tr><td>Nº predocs           <td number>{{format(numero_predocs)}}</td></tr>
+        <tr><td>Nº postdocs          <td number>{{format(numero_postdocs)}}</td></tr>
+        <tr><td>Total CA             <td number>{{format(total_CA)}} €</td></tr>
+        <tr><td>Projectes competitius<td number>{{format(escenari.projectes.filter(p=>p.competitiu).length)}}</td></tr>
+        <tr><td>Projectes europeus   <td number>{{format(escenari.projectes.filter(p=>p.europeu).length)}}</td></tr>
       </table>
     </div>
 
@@ -355,17 +414,23 @@
 
       this.tipus=[
         "estructural",   //del mateix centre, a.k.a. "patrons"
-        "competitiu",    //recerca
         "transferència", //SCT, consultoria, ...
         "mecenatge",     //donacions
-        "SCTs",
-        "CAPEX",
       ];
       this.tipus_triat=null;
+
+      this.competitiu = false;
+      this.europeu    = false;
+      this.events={
+        congressos:0,
+        articles:0,
+      };
 
       this.despeses=[
         //objectes Despesa
       ];
+      //25% de les despeses directes
+      this.percentatge_overheads=25;
 
       this.produccio=[
         //produccio científica/impacte/serveis, TBD
@@ -382,24 +447,27 @@
     //càlcul overheads == despesa indirecta
     get overheads(){
       let total = this.despeses.map(d=>d.euros).reduce((p,c)=>p+c,0);
-      return 0.25*total;
+      return this.percentatge_overheads/100*total;
+    }
+
+    get total_despeses(){
+      let total = this.despeses.map(d=>d.euros).reduce((p,c)=>p+c,0);
+      return total + this.overheads;
     }
   }
 
   //despesa o ingrés dins d'un Projecte
   class Despesa{
-    constructor(){
+    constructor(nom){
       this.visible = 1;
-
-      this.nom   = "descripció despesa";
-
-      this.euros = 1; //euros
+      this.nom     = nom || "Despesa 1";
+      this.euros   = 1; //euros
 
       //si la despesa és tipus capital expense (i.e. compra equip)
       this.capex   = false;
 
       this.rrhh    = false; //personal (salari) ò compra d'un equip ò manteniment d'un aparell ò compra fungibles
-      this.persona = null; //objecte persona en cas que sigui despesa tipus rrhh
+      this.persona = null;  //objecte persona en cas que sigui despesa tipus rrhh
     }
   }
 
@@ -469,8 +537,22 @@
       },
 
       afegir_despesa(projecte){
-        let d = new Despesa();
+        let n = projecte.despeses.length+1;
+        let d = new Despesa(`Despesa ${n}`);
         projecte.despeses.push(d);
+      },
+
+      veure_projecte(pro){
+        this.escenari.projectes.forEach(p=>p.visible=false);
+        pro.visible=1;
+      },
+      veure_persona(per){
+        this.escenari.persones.forEach(p=>p.visible=false);
+        per.visible=1;
+      },
+
+      get_projectes_on_la_persona_esta_involucrada(persona){
+        return this.escenari.projectes.filter(p=>p.despeses.some(d=>d.persona==persona));
       },
     },
 
@@ -494,6 +576,24 @@
           });
         });
         return total;
+      },
+      total_despeses_CAPEX(){
+        let total = 0;
+        this.escenari.projectes.forEach(pro=>{
+          pro.despeses.filter(d=>d.capex).forEach(des=>{
+            total += des.euros;
+          });
+        });
+        return total;
+      },
+      numero_predocs(){
+        return this.escenari.persones.filter(p=>p.categoria=="predoc").length;
+      },
+      numero_postdocs(){
+        return this.escenari.persones.filter(p=>p.categoria=="postdoc").length;
+      },
+      total_CA(){
+        return this.escenari.persones.map(p=>p.cost_empresa_eur).reduce((p,c)=>p+c,0);
       },
     },
 
