@@ -125,10 +125,11 @@
               <table border=1 v-if="p.visible" style="width:100%">
                 <tr>
                   <td colspan=2>
-                    <label>Inici <input type=date v-model="p.durada.inici"></label>&nbsp;
-                    <label>Final <input type=date v-model="p.durada.final"></label>
+                    <label>Inici <input type=date v-model="p.durada.inici" @change="p.determinar_despeses_disabled=false"></label>&nbsp;
+                    <label>Final <input type=date v-model="p.durada.final" @change="p.determinar_despeses_disabled=false"></label>
                     <span>
                       (anualitats: {{p.anualitats.length}})
+                      <button :disabled="p.determinar_despeses_disabled" @click="p.determina_despeses_inicials()">reset despeses</button>
                     </span>
                   </td>
                 </tr>
@@ -422,6 +423,8 @@
 
       this.competitiu = false;
       this.europeu    = false;
+
+      //TODO
       this.events={
         congressos:0,
         articles:0,
@@ -434,10 +437,15 @@
       //25% de les despeses directes
       this.percentatge_overheads=25;
 
+      //estableix estructura despeses
       this.determina_despeses_inicials();
+      this.determinar_despeses_disabled=true;
     }
 
     determina_despeses_inicials(){
+      //reset despeses!
+      this.despeses=[];
+
       this.anualitats.forEach(year=>{
         let dc = new Despesa("Directes Corrents",year);
         dc.tipus = "DC";
@@ -455,6 +463,8 @@
         di.tipus = "Indirecta";
         this.despeses.push(di);
       });
+
+      this.determinar_despeses_disabled=true;
     }
 
     //calcula anualitats: anys que dura el projecte
