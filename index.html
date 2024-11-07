@@ -110,33 +110,28 @@
               <div v-if="p.visible">
                 <table border=1>
                   <tr>
-                    <td>
-                      <label>Inici <input type=date v-model="p.durada.inici"></label><!--
-                      --> <label>Final <input type=date v-model="p.durada.final"></label>
+                    <td colspan=2>
+                      <label>Inici <input type=date v-model="p.durada.inici"></label>&nbsp;
+                      <label>Final <input type=date v-model="p.durada.final"></label>
                       <span>
-                        (anualitats: {{p.anualitats}})
+                        (anualitats: {{p.anualitats.length}})
                       </span>
                     </td>
                   </tr>
                   <tr>
+                    <td>Codi</td>
                     <td>
-                      Tipus projecte
-                      <div
-                        style="
-                          display:grid;
-                          grid-template-columns:repeat(4,1fr);
-                        "
-                      >
-                        <div v-for="t in p.tipus">
-                          <label>
-                            <input type=radio v-model="p.tipus_triat" :value="t"> {{t}}
-                          </label>
-                        </div>
-                      </div>
+                      <input type=text v-model="p.codi" placeholder="codi projecte">
                     </td>
                   </tr>
                   <tr>
+                    <td>Tipus</td>
                     <td>
+                      <input type=text v-model.text="p.tipus" placeholder="tipus projecte">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan=2>
                       <label>
                         <input type=checkbox v-model="p.competitiu">
                         Projecte competitiu
@@ -144,7 +139,7 @@
                     </td>
                   </tr>
                   <tr>
-                    <td>
+                    <td colspan=2>
                       <label>
                         <input type=checkbox v-model="p.europeu">
                         Projecte europeu
@@ -153,20 +148,45 @@
                   </tr>
 
                   <tr>
+                    <td colspan=2>
+                      <label>
+                        <input type=checkbox v-model="p.coordinat_per_ICRA">
+                        Projecte coordinat per ICRA
+                      </label>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td colspan=2>
+                      <label>
+                        <input type=checkbox v-model="p.SEC">
+                        SEC (?)
+                      </label>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>Finançador</td>
                     <td>
-                      IP (investigador principal del projecte)
-                      <select v-model="p.IP" v-if="escenari.persones.length">
+                      <input type=text v-model="p.finançador" placeholder="finançador">
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>Director</td>
+                    <td>
+                      <select v-model="p.director" v-if="escenari.persones.length">
                         <option :value="null">--selecciona persona--</option>
                         <option v-for="per in escenari.persones" :value="per">{{per.nom}}</option>
                       </select>
-                      <span v-if="p.IP">
-                        <button @click="veure_persona(p.IP)">veure</button>
+                      <span v-if="p.director">
+                        <button @click="veure_persona(p.director)">veure</button>
                       </span>
                     </td>
                   </tr>
 
                   <tr>
-                    <td style="padding-left:10px">
+                    <td style="padding-left:10px" colspan=2>
                       <b>Taula Despeses ({{p.despeses.length}})</b>&nbsp;
                       <button @click="afegir_despesa(p)" style="padding:0.618em 1em;">
                         afegir despesa
@@ -187,6 +207,11 @@
                         <tbody v-for="d,j in p.despeses">
                           <tr>
                             <td>
+                              <select v-model.number="d.year">
+                                <option v-for="y in p.anualitats" :value="y">{{y}}</option>
+                              </select>
+                            </td>
+                            <td>
                               <div style="white-space:nowrap">
                                 <input type=text v-model="d.nom" placeholder="nom/descripció despesa">
                                 <button @click="d.visible^=1" :visible="d.visible">detalls</button>
@@ -195,24 +220,11 @@
                               <table v-if="d.visible">
                                 <tr>
                                   <td>
-                                    <div>
+                                    Tipus
+                                    <div v-for="tipus in d.tipus_master">
                                       <label>
-                                        <input type=checkbox v-model="d.capex" :disabled="d.rrhh">
-                                        CAPEX
+                                        <input type=radio v-model="d.tipus" :value="tipus"> {{tipus}}
                                       </label>
-                                    </div>
-                                    <div>
-                                      <label><input type=radio v-model="d.rrhh" :value="false" @click="d.persona=null"> No-RRHH</label>
-                                    </div>
-                                    <div>
-                                      <label><input type=radio v-model="d.rrhh" :value="true" @change="d.capex=false"> RRHH </label>
-                                      <select v-model="d.persona" :disabled="!d.rrhh" v-if="escenari.persones.length">
-                                        <option :value="null">--selecciona persona--</option>
-                                        <option v-for="per in escenari.persones" :value="per">{{per.nom}}</option>
-                                      </select>
-                                      <span v-if="d.persona">
-                                        <button @click="veure_persona(d.persona)">veure</button>
-                                      </span>
                                     </div>
                                   </td>
                                 </tr>
@@ -222,32 +234,15 @@
                               <div style="white-space:nowrap">
                                 <input type=number v-model="d.euros"> €
                               </div>
-                              <div v-if="d.rrhh && d.persona">
-                                <button v-if="d.visible" @click="d.euros = d.persona.cost_empresa_eur">
-                                  set despesa = CA
-                                  ({{d.persona.cost_empresa_eur}} €)
-                                </button>
-                              </div>
                             </td>
                             <td>
                               <button @click="p.despeses.splice(j,1)" style="white-space:nowrap">eliminar despesa</button>
                             </td>
                           </tr>
                         </tbody>
-                        <tr>
-                          <td>
-                            <div>
-                            </div>
-                            Overheads calculats
-                            <input type=number v-model.number="p.percentatge_overheads" style="width:3em" max=100 min=0> %
-                          </td>
-                          <td style="text-align:right">
-                            {{format(p.overheads)}} €
-                          </td>
-                        </tr>
                         <tfoot>
                           <tr>
-                            <td>Total despeses projecte</td>
+                            <td colspan=2>Total despeses projecte</td>
                             <td number>{{format(p.total_despeses)}} €</td>
                           </tr>
                         </tfoot>
@@ -325,25 +320,6 @@
                     <td>Cost Empresa Anual ("CA")</td>
                     <td>
                       <input type=number v-model="p.cost_empresa_eur"> €
-
-                      <div v-for="llista_projectes in [get_projectes_on_la_persona_esta_involucrada(p)]">
-                        <table border=1 v-if="llista_projectes.length" style="font-size:smaller;border-collapse:collapse">
-                          <tr v-for="pro in llista_projectes">
-                            <td>
-                              <a href="#" @click="veure_projecte(pro);return false">{{pro.nom}}</a>
-                            </td>
-                            <td>
-                              <table style="font-size:smaller">
-                                <tr v-for="d in pro.despeses.filter(d=>d.persona==p)">
-                                  <td>{{d.nom}}:</td>
-                                  <td>{{format(d.euros)}} €</td>
-                                  <td>({{format(d.euros/p.cost_empresa_eur*100)}}%)</td>
-                                </tr>
-                              </table>
-                            </td>
-                          </tr>
-                        </table>
-                      </div>
                     </td>
                   </tr>
                 </table>
@@ -363,22 +339,19 @@
 
     <div>
       <table border=1>
-        <tr>
-          <th colspan=2>
-            TAULA INDICADORS
-          </th>
+        <tr><th colspan=2>TAULA INDICADORS</th></tr>
+        <tr><td>Total projectes      <td number>{{format(escenari.projectes.length)}}</td></tr>
+        <tr><td>Projectes competitius<td number>{{format(escenari.projectes.filter(p=>p.competitiu).length)}}</td></tr>
+        <tr><td>Projectes europeus   <td number>{{format(escenari.projectes.filter(p=>p.europeu).length)}}</td></tr>
+        <tr><td>Projectes coordinats <td number>{{format(escenari.projectes.filter(p=>p.coordinat_per_ICRA).length)}}</td></tr>
         <tr><td>Total despeses       <td number>{{format(total_despeses)}} €</td></tr>
         <tr><td>Total despeses RRHH  <td number>{{format(total_despeses_RRHH)}} €</td></tr>
         <tr><td>Total despeses CAPEX <td number>{{format(total_despeses_CAPEX)}} €</td></tr>
-        <tr><td>Total overheads      <td number>{{format(escenari.projectes.map(p=>p.overheads).reduce((p,c)=>p+c,0))}} €</td></tr>
         <tr><td>Nº predocs           <td number>{{format(numero_predocs)}}</td></tr>
         <tr><td>Nº postdocs          <td number>{{format(numero_postdocs)}}</td></tr>
         <tr><td>Total CA             <td number>{{format(total_CA)}} €</td></tr>
-        <tr><td>Projectes competitius<td number>{{format(escenari.projectes.filter(p=>p.competitiu).length)}}</td></tr>
-        <tr><td>Projectes europeus   <td number>{{format(escenari.projectes.filter(p=>p.europeu).length)}}</td></tr>
       </table>
     </div>
-
   </div>
 </div>
 
@@ -404,20 +377,23 @@
 
       this.nom = nom || "Projecte 1"; //exemple: "projecte europeu que comença el 2027"
 
+      this.codi = ""; //codi únic (text)
+
       //investigador principal
-      this.IP = null;
+      this.director = null;
+
+      //coordinat per ICRA (bool)
+      this.coordinat_per_ICRA = false;
+      this.SEC = false; //preguntar què és TODO
+
+      this.finançador=""; //text?
 
       this.durada={
         inici: "2027-01-01",
         final: "2030-01-01",
       };
 
-      this.tipus=[
-        "estructural",   //del mateix centre, a.k.a. "patrons"
-        "transferència", //SCT, consultoria, ...
-        "mecenatge",     //donacions
-      ];
-      this.tipus_triat=null;
+      this.tipus="";//text
 
       this.competitiu = false;
       this.europeu    = false;
@@ -429,45 +405,65 @@
       this.despeses=[
         //objectes Despesa
       ];
+
       //25% de les despeses directes
       this.percentatge_overheads=25;
 
-      this.produccio=[
-        //produccio científica/impacte/serveis, TBD
-      ];
+      this.determina_despeses_inicials();
+    }
+
+    determina_despeses_inicials(){
+      this.anualitats.forEach(year=>{
+        let dc = new Despesa("Directes Corrents",year);
+        dc.tipus = "DC";
+        this.despeses.push(dc);
+
+        let dp = new Despesa("Directes RRHH", year);
+        dp.tipus = "RRHH";
+        this.despeses.push(dp);
+
+        let dx = new Despesa("CAPEX", year);
+        dx.tipus = "CAPEX";
+        this.despeses.push(dx);
+
+        let di = new Despesa("Indirectes (overheads)", year);
+        di.tipus = "Indirecta";
+        this.despeses.push(di);
+      });
     }
 
     //calcula anualitats: anys que dura el projecte
     get anualitats(){
       let inici = new Date(this.durada.inici).getFullYear();
       let final = new Date(this.durada.final).getFullYear();
-      return final-inici+1; //number
-    }
-
-    //càlcul overheads == despesa indirecta
-    get overheads(){
-      let total = this.despeses.map(d=>d.euros).reduce((p,c)=>p+c,0);
-      return this.percentatge_overheads/100*total;
+      let n = final-inici+1;
+      let arr = [];
+      for(let i=0;i<n;i++){
+        arr.push(inici+i);
+      }
+      return arr; //array of numbers
     }
 
     get total_despeses(){
-      let total = this.despeses.map(d=>d.euros).reduce((p,c)=>p+c,0);
-      return total + this.overheads;
+      return this.despeses.map(d=>d.euros).reduce((p,c)=>p+c,0);
     }
   }
 
   //despesa o ingrés dins d'un Projecte
   class Despesa{
-    constructor(nom){
-      this.visible = 1;
-      this.nom     = nom || "Despesa 1";
-      this.euros   = 1; //euros
+    constructor(nom, year){
+      this.visible   = 0;
+      this.nom       = nom || "Despesa 1";
+      this.euros     = 1; //euros
+      this.year      = year || 0;
 
-      //si la despesa és tipus capital expense (i.e. compra equip)
-      this.capex   = false;
-
-      this.rrhh    = false; //personal (salari) ò compra d'un equip ò manteniment d'un aparell ò compra fungibles
-      this.persona = null;  //objecte persona en cas que sigui despesa tipus rrhh
+      this.tipus_master=[
+        "DC", //directa corrent
+        "RRHH", //directa RRHH
+        "CAPEX", //directa capex
+        "Indirecta", //indirecta
+      ];
+      this.tipus=this.tipus_master[0];
     }
   }
 
@@ -521,16 +517,9 @@
       },
       eliminar_persona(p){
         this.escenari.projectes.forEach(pro=>{
-          if(pro.IP==p){
-            pro.IP=null;
+          if(pro.director==p){
+            pro.director=null;
           }
-          pro.despeses.forEach(des=>{
-            if(des.persona==p){
-              console.log(des);
-              des.persona=null;
-              console.log(des);
-            }
-          });
         });
         let index = this.escenari.persones.indexOf(p);
         this.escenari.persones.splice(index,1);
@@ -551,9 +540,6 @@
         per.visible=1;
       },
 
-      get_projectes_on_la_persona_esta_involucrada(persona){
-        return this.escenari.projectes.filter(p=>p.despeses.some(d=>d.persona==persona));
-      },
     },
 
     computed:{
@@ -563,15 +549,13 @@
           pro.despeses.forEach(des=>{
             total += des.euros;
           });
-
-          total += pro.overheads;
         });
         return total;
       },
       total_despeses_RRHH(){
         let total = 0;
         this.escenari.projectes.forEach(pro=>{
-          pro.despeses.filter(d=>d.rrhh).forEach(des=>{
+          pro.despeses.filter(d=>d.tipus=="RRHH").forEach(des=>{
             total += des.euros;
           });
         });
@@ -580,7 +564,7 @@
       total_despeses_CAPEX(){
         let total = 0;
         this.escenari.projectes.forEach(pro=>{
-          pro.despeses.filter(d=>d.capex).forEach(des=>{
+          pro.despeses.filter(d=>d.tipus=="CAPEX").forEach(des=>{
             total += des.euros;
           });
         });
@@ -601,11 +585,9 @@
       let esc = new Escenari();
       let pro = new Projecte();
       let per = new Persona();
-      let des = new Despesa();
 
       esc.projectes.push(pro);
       esc.persones .push(per);
-      pro.despeses.push(des);
 
       this.escenari = esc;
     },
