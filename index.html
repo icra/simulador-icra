@@ -41,6 +41,11 @@
       border:none;
     }
   </style>
+  <script>
+    Array.prototype.suma=function(){
+      return this.reduce((p,c)=>p+c,0);
+    }
+  </script>
 </head><body>
 <h1>Simulador ICRA (en desenvolupament)</h1>
 
@@ -101,159 +106,180 @@
           <tr v-for="p,i in escenari.projectes">
             <td>
               <!--projecte-->
-
-              <input type=text v-model="p.nom" placeholder="nom/descripció projecte" :id="`nom-projecte-${i}`">
-              <button @click="p.visible^=1" :visible="p.visible">detalls</button>
-
-              <span v-if="!p.visible">&nbsp;{{format(p.total_despeses)}} €</span>
-
-              <div v-if="p.visible">
-                <table border=1>
-                  <tr>
-                    <td colspan=2>
-                      <label>Inici <input type=date v-model="p.durada.inici"></label>&nbsp;
-                      <label>Final <input type=date v-model="p.durada.final"></label>
-                      <span>
-                        (anualitats: {{p.anualitats.length}})
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Codi</td>
-                    <td>
-                      <input type=text v-model="p.codi" placeholder="codi projecte">
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Tipus</td>
-                    <td>
-                      <input type=text v-model.text="p.tipus" placeholder="tipus projecte">
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colspan=2>
-                      <label>
-                        <input type=checkbox v-model="p.competitiu">
-                        Projecte competitiu
-                      </label>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colspan=2>
-                      <label>
-                        <input type=checkbox v-model="p.europeu">
-                        Projecte europeu
-                      </label>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td colspan=2>
-                      <label>
-                        <input type=checkbox v-model="p.coordinat_per_ICRA">
-                        Projecte coordinat per ICRA
-                      </label>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td colspan=2>
-                      <label>
-                        <input type=checkbox v-model="p.SEC">
-                        SEC (?)
-                      </label>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>Finançador</td>
-                    <td>
-                      <input type=text v-model="p.finançador" placeholder="finançador">
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>Director</td>
-                    <td>
-                      <select v-model="p.director" v-if="escenari.persones.length">
-                        <option :value="null">--selecciona persona--</option>
-                        <option v-for="per in escenari.persones" :value="per">{{per.nom}}</option>
-                      </select>
-                      <span v-if="p.director">
-                        <button @click="veure_persona(p.director)">veure</button>
-                      </span>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td style="padding-left:10px" colspan=2>
-                      <b>Taula Despeses ({{p.despeses.length}})</b>&nbsp;
-                      <button @click="afegir_despesa(p)" style="padding:0.618em 1em;">
-                        afegir despesa
-                      </button>
-                      <span>&nbsp;vista despeses
-                        <button @click="p.despeses.forEach(d=>d.visible=0)" :disabled="p.despeses.every(d=>!d.visible)">-</button>
-                        <button @click="p.despeses.forEach(d=>d.visible=1)" :disabled="p.despeses.every(d=>d.visible)">+</button>
-                      </span>
-
-                      <div v-if="p.despeses.length==0">
-                        <code>&nbsp;~no hi ha despeses</code>
-                      </div>
-
-                      <table v-if="p.despeses.length" border=1 style="border-collapse:collapse"
-                        :despeses_projecte="i"
-                        class=despeses
-                      >
-                        <tbody v-for="d,j in p.despeses">
-                          <tr>
-                            <td>
-                              <select v-model.number="d.year">
-                                <option v-for="y in p.anualitats" :value="y">{{y}}</option>
-                              </select>
-                            </td>
-                            <td>
-                              <div style="white-space:nowrap">
-                                <input type=text v-model="d.nom" placeholder="nom/descripció despesa">
-                                <button @click="d.visible^=1" :visible="d.visible">detalls</button>
-                              </div>
-
-                              <table v-if="d.visible">
-                                <tr>
-                                  <td>
-                                    Tipus
-                                    <div v-for="tipus in d.tipus_master">
-                                      <label>
-                                        <input type=radio v-model="d.tipus" :value="tipus"> {{tipus}}
-                                      </label>
-                                    </div>
-                                  </td>
-                                </tr>
-                              </table>
-                            </td>
-                            <td>
-                              <div style="white-space:nowrap">
-                                <input type=number v-model="d.euros"> €
-                              </div>
-                            </td>
-                            <td>
-                              <button @click="p.despeses.splice(j,1)" style="white-space:nowrap">eliminar despesa</button>
-                            </td>
-                          </tr>
-                        </tbody>
-                        <tfoot>
-                          <tr>
-                            <td colspan=2>Total despeses projecte</td>
-                            <td number>{{format(p.total_despeses)}} €</td>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
+              <div
+                style="
+                  display:flex;
+                  justify-content:space-between;
+                "
+              >
+                <div>
+                  <input type=text v-model="p.nom" placeholder="nom/descripció projecte" :id="`nom-projecte-${i}`">
+                  <button @click="p.visible^=1" :visible="p.visible">detalls</button>
+                  <span v-if="!p.visible">&nbsp;{{format(p.total_despeses)}} €</span>
+                </div>
+                <div>
+                  <button @click="escenari.projectes.splice(i,1)" style="white-space:nowrap">eliminar projecte</button>
+                </div>
               </div>
-            </td>
-            <td>
-              <button @click="escenari.projectes.splice(i,1)" style="white-space:nowrap">eliminar projecte</button>
+
+              <table border=1 v-if="p.visible" style="width:100%">
+                <tr>
+                  <td colspan=2>
+                    <label>Inici <input type=date v-model="p.durada.inici"></label>&nbsp;
+                    <label>Final <input type=date v-model="p.durada.final"></label>
+                    <span>
+                      (anualitats: {{p.anualitats.length}})
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Codi</td>
+                  <td>
+                    <input type=text v-model="p.codi" placeholder="codi projecte">
+                  </td>
+                </tr>
+                <tr>
+                  <td>Tipus</td>
+                  <td>
+                    <input type=text v-model.text="p.tipus" placeholder="tipus projecte">
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan=2>
+                    <label>
+                      <input type=checkbox v-model="p.competitiu">
+                      Projecte competitiu
+                    </label>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan=2>
+                    <label>
+                      <input type=checkbox v-model="p.europeu">
+                      Projecte europeu
+                    </label>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td colspan=2>
+                    <label>
+                      <input type=checkbox v-model="p.coordinat_per_ICRA">
+                      Projecte coordinat per ICRA
+                    </label>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td colspan=2>
+                    <label>
+                      <input type=checkbox v-model="p.SEC">
+                      SEC (?)
+                    </label>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>Finançador</td>
+                  <td>
+                    <input type=text v-model="p.finançador" placeholder="finançador">
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>Línia</td>
+                  <td>
+                    <input type=text v-model="p.linia" placeholder="línia">
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>Director</td>
+                  <td>
+                    <select v-model="p.director" v-if="escenari.persones.length">
+                      <option :value="null">--selecciona persona--</option>
+                      <option v-for="per in escenari.persones" :value="per">{{per.nom}}</option>
+                    </select>
+                    <span v-if="p.director">
+                      <button @click="veure_persona(p.director)">veure</button>
+                    </span>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding-left:10px" colspan=2>
+                    <b>Taula Despeses ({{p.despeses.length}})</b>&nbsp;
+                    <button @click="afegir_despesa(p)" style="padding:0.618em 1em;">
+                      afegir despesa
+                    </button>
+                    <span>&nbsp;vista despeses
+                      <button @click="p.despeses.forEach(d=>d.visible=0)" :disabled="p.despeses.every(d=>!d.visible)">-</button>
+                      <button @click="p.despeses.forEach(d=>d.visible=1)" :disabled="p.despeses.every(d=>d.visible)">+</button>
+                    </span>
+
+                    <div v-if="p.despeses.length==0">
+                      <code>&nbsp;~no hi ha despeses</code>
+                    </div>
+
+                    <table v-if="p.despeses.length" border=1 style="border-collapse:collapse"
+                      :despeses_projecte="i"
+                      class=despeses
+                    >
+                      <tbody v-for="d,j in p.despeses">
+                        <tr>
+                          <td>
+                            <select v-model.number="d.year">
+                              <option v-for="y in p.anualitats" :value="y">{{y}}</option>
+                            </select>
+                          </td>
+                          <td>
+                            <div style="white-space:nowrap">
+                              <input type=text v-model="d.nom" placeholder="nom/descripció despesa">
+                              <button @click="d.visible^=1" :visible="d.visible">detalls</button>
+                            </div>
+
+                            <table v-if="d.visible">
+                              <tr>
+                                <td>
+                                  Tipus
+                                  <div v-for="tipus in d.tipus_master">
+                                    <label>
+                                      <input type=radio v-model="d.tipus" :value="tipus"> {{tipus}}
+                                    </label>
+                                  </div>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                          <td>
+                            <div style="white-space:nowrap">
+
+                              <input type=number v-model="d.euros" min=0> €
+
+                              <div v-if="d.visible && d.tipus=='Indirecta'">
+                                <div v-for="calcul in [calcula_overheads(p,d.year)]">
+                                  <button @click="d.euros=calcul"
+                                    :disabled="d.euros==calcul"
+                                  >set euros = {{format(calcul)}}</button>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <button @click="p.despeses.splice(j,1)" style="white-space:nowrap">eliminar despesa</button>
+                          </td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan=2>Total despeses projecte</td>
+                          <td number>{{format(p.total_despeses)}} €</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
         </table>
@@ -293,13 +319,6 @@
 
                 <table border=1 v-if="p.visible">
                   <tr>
-                    <td>Tipus</td>
-                    <td>
-                      <label><input type=radio v-model="p.tipus" value="admin"> admin</label>
-                      <label><input type=radio v-model="p.tipus" value="recerca"> recerca</label>
-                    </td>
-                  </tr>
-                  <tr>
                     <td>Permanent</td>
                     <td>
                       <label><input type=radio v-model="p.permanent" :value="true"> sí</label>
@@ -309,11 +328,11 @@
                   <tr>
                     <td>Categoria</td>
                     <td>
-                      <label><input type=radio v-model="p.categoria" value="admin"> admin</label>
-                      <label><input type=radio v-model="p.categoria" value="tècnic"> tècnic</label>
-                      <label><input type=radio v-model="p.categoria" value="ip"      :disabled="p.tipus!='recerca'"> ip</label>
-                      <label><input type=radio v-model="p.categoria" value="predoc"  :disabled="p.tipus!='recerca'"> predoc</label>
-                      <label><input type=radio v-model="p.categoria" value="postdoc" :disabled="p.tipus!='recerca'"> postdoc</label>
+                      <label><input type=radio v-model="p.categoria" value="admin"   > admin</label>
+                      <label><input type=radio v-model="p.categoria" value="tècnic"  > tècnic</label>
+                      <label><input type=radio v-model="p.categoria" value="ip"      > ip</label>
+                      <label><input type=radio v-model="p.categoria" value="predoc"  > predoc</label>
+                      <label><input type=radio v-model="p.categoria" value="postdoc" > postdoc</label>
                     </td>
                   </tr>
                   <tr>
@@ -344,9 +363,14 @@
         <tr><td>Projectes competitius<td number>{{format(escenari.projectes.filter(p=>p.competitiu).length)}}</td></tr>
         <tr><td>Projectes europeus   <td number>{{format(escenari.projectes.filter(p=>p.europeu).length)}}</td></tr>
         <tr><td>Projectes coordinats <td number>{{format(escenari.projectes.filter(p=>p.coordinat_per_ICRA).length)}}</td></tr>
-        <tr><td>Total despeses       <td number>{{format(total_despeses)}} €</td></tr>
-        <tr><td>Total despeses RRHH  <td number>{{format(total_despeses_RRHH)}} €</td></tr>
-        <tr><td>Total despeses CAPEX <td number>{{format(total_despeses_CAPEX)}} €</td></tr>
+
+        <tr><td>Total despeses <td number>{{format(total_despeses)}} €</td></tr>
+
+        <tr><td>Total despeses DC         <td number>{{format(total_despeses_tipus("DC"))       }} €</td></tr>
+        <tr><td>Total despeses RRHH       <td number>{{format(total_despeses_tipus("RRHH"))     }} €</td></tr>
+        <tr><td>Total despeses CAPEX      <td number>{{format(total_despeses_tipus("CAPEX"))    }} €</td></tr>
+        <tr><td>Total despeses Indirectes <td number>{{format(total_despeses_tipus("Indirecta"))}} €</td></tr>
+
         <tr><td>Nº predocs           <td number>{{format(numero_predocs)}}</td></tr>
         <tr><td>Nº postdocs          <td number>{{format(numero_postdocs)}}</td></tr>
         <tr><td>Total CA             <td number>{{format(total_CA)}} €</td></tr>
@@ -387,6 +411,7 @@
       this.SEC = false; //preguntar què és TODO
 
       this.finançador=""; //text?
+      this.linia=""; //text?
 
       this.durada={
         inici: "2027-01-01",
@@ -445,7 +470,7 @@
     }
 
     get total_despeses(){
-      return this.despeses.map(d=>d.euros).reduce((p,c)=>p+c,0);
+      return this.despeses.map(d=>d.euros).suma();
     }
   }
 
@@ -473,7 +498,6 @@
       this.visible = 1;
 
       this.nom              = nom || "Persona 1";
-      this.tipus            = "admin"; //["admin","recerca"]
       this.categoria        = "admin"; //["ip","predoc","postdoc","tècnic"]
       this.permanent        = true;    //bool
       this.cost_empresa_eur = 30000;   //€
@@ -540,36 +564,38 @@
         per.visible=1;
       },
 
+      total_despeses_tipus(tipus){
+        let total = 0;
+        this.escenari.projectes.forEach(pro=>{
+          pro.despeses.filter(d=>d.tipus==tipus).forEach(d=>{
+            total += d.euros;
+          });
+        });
+        return total;
+      },
+
+      calcula_overheads(projecte, year){
+        let percentatge = projecte.percentatge_overheads;
+        let euros = projecte.despeses.filter(d=>
+          d.year==year && (
+            d.tipus=='DC' || d.tipus=='RRHH'
+          )
+        ).map(d=>d.euros).suma();
+        return euros*percentatge/100;
+      },
     },
 
     computed:{
       total_despeses(){
         let total = 0;
         this.escenari.projectes.forEach(pro=>{
-          pro.despeses.forEach(des=>{
-            total += des.euros;
+          pro.despeses.forEach(d=>{
+            total += d.euros;
           });
         });
         return total;
       },
-      total_despeses_RRHH(){
-        let total = 0;
-        this.escenari.projectes.forEach(pro=>{
-          pro.despeses.filter(d=>d.tipus=="RRHH").forEach(des=>{
-            total += des.euros;
-          });
-        });
-        return total;
-      },
-      total_despeses_CAPEX(){
-        let total = 0;
-        this.escenari.projectes.forEach(pro=>{
-          pro.despeses.filter(d=>d.tipus=="CAPEX").forEach(des=>{
-            total += des.euros;
-          });
-        });
-        return total;
-      },
+
       numero_predocs(){
         return this.escenari.persones.filter(p=>p.categoria=="predoc").length;
       },
@@ -577,7 +603,7 @@
         return this.escenari.persones.filter(p=>p.categoria=="postdoc").length;
       },
       total_CA(){
-        return this.escenari.persones.map(p=>p.cost_empresa_eur).reduce((p,c)=>p+c,0);
+        return this.escenari.persones.map(p=>p.cost_empresa_eur).suma();
       },
     },
 
